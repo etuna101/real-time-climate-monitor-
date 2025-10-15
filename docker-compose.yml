@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongodb:
+    image: mongo:5.0
+    container_name: climate-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: climate-dashboard
+    networks:
+      - climate-network
+
+  # Redis Service (for caching)
+  redis:
+    image: redis:6-alpine
+    container_name: climate-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - climate-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: climate-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGODB_URI=mongodb://root:example@mongodb:27017/climate-dashboard?authSource=admin
+      - JWT_SECRET=your_jwt_secret_here
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - climate-network
+    restart: unless-stopped
+
+  # Frontend Service (to be added later)
+  # frontend:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   container_name: climate-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./client:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #     - REACT_APP_API_URL=http://localhost:5000
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - climate-network
+  #   restart: unless-stopped
+
+# Volumes
+volumes:
+  mongodb_data:
+  redis_data:
+
+# Networks
+networks:
+  climate-network:
+    driver: bridge
