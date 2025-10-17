@@ -55,6 +55,25 @@ export const aiAPI = {
     api.get(`/ai/predictions/${metric}`, { params: { years } }),
 };
 
+// Auth API
+export const authAPI = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (email, password, name) => api.post('/auth/register', { email, password, name }),
+  me: () => api.get('/auth/me'),
+  getPreferences: () => api.get('/auth/preferences'),
+  savePreferences: (prefs) => api.post('/auth/preferences', prefs),
+};
+
+// User API
+export const userAPI = {
+  getProfile: () => api.get('/user/profile'),
+  updateProfile: (payload) => api.post('/user/profile', payload),
+  updateSettings: (preferences) => api.post('/user/settings', { preferences }),
+  getNotifications: () => api.get('/user/notifications'),
+  addNotification: (title, body) => api.post('/user/notifications', { title, body }),
+  markNotificationRead: (idx) => api.post(`/user/notifications/${idx}/read`),
+};
+
 // Health check
 export const healthCheck = () => axios.get('http://localhost:5000/health');
 

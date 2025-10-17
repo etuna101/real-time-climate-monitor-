@@ -45,37 +45,37 @@ exports.getGlobalData = async (req, res) => {
 // @access  Public
 exports.getHistoricalData = async (req, res) => {
   try {
-    const { region = 'global', metric = 'temperature', years = 5 } = req.query;
-    const points = Number(years) * 12;
-    const now = new Date();
-    const data = Array.from({ length: points }).map((_, i) => {
-      const date = new Date(now);
-      date.setMonth(now.getMonth() - (points - 1 - i));
-      const iso = date.toISOString().slice(0, 10);
-      // Simple mock signals tuned for East Africa context
-      const tempAnomaly = Math.sin(i / 8) * 0.3 + 0.8 + (i / points) * 0.1;
-      const precipAnomaly = Math.cos(i / 6) * 0.2 + (i % 12 >= 8 && i % 12 <= 10 ? 0.25 : 0);
-      return {
-        date: iso,
-        temperatureAnomaly: Number(tempAnomaly.toFixed(2)),
-        precipitationAnomaly: Number(precipAnomaly.toFixed(2)),
-      };
-    });
+    const { region = 'east_africa', metric = 'temperature', years = 5 } = req.query;
+    const ClimateReading = require('../models/ClimateReading');
+    const since = new Date();
+    since.setFullYear(since.getFullYear() - Number(years));
+    const rows = await ClimateReading.find({ region, date: { $gte: since } }).sort({ date: 1 }).lean();
 
-    res.status(200).json({
-      success: true,
-      data: {
-        region,
-        metric,
-        series: data,
-      },
-    });
+    if (rows.length === 0) {
+      // Fallback to mock if DB empty
+      const points = Number(years) * 12;
+      const now = new Date();
+      const data = Array.from({ length: points }).map((_, i) => {
+        const date = new Date(now);
+        date.setMonth(now.getMonth() - (points - 1 - i));
+        const iso = date.toISOString().slice(0, 10);
+        const tempAnomaly = Math.sin(i / 8) * 0.3 + 0.8 + (i / points) * 0.1;
+        const precipAnomaly = Math.cos(i / 6) * 0.2 + (i % 12 >= 8 && i % 12 <= 10 ? 0.25 : 0);
+        return { date: iso, temperatureAnomaly: Number(tempAnomaly.toFixed(2)), precipitationAnomaly: Number(precipAnomaly.toFixed(2)) };
+      });
+      return res.status(200).json({ success: true, data: { region, metric, series: data } });
+    }
+
+    const series = rows.map((r) => ({
+      date: new Date(r.date).toISOString().slice(0, 10),
+      temperatureAnomaly: r.temperatureAnomaly,
+      precipitationAnomaly: r.precipitationAnomaly,
+    }));
+
+    res.status(200).json({ success: true, data: { region, metric, series } });
   } catch (error) {
     console.error('Error getting historical data:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -111,37 +111,13 @@ exports.getLocationData = async (req, res) => {
 // @access  Public
 exports.getWeatherAlerts = async (req, res) => {
   try {
-    const mockAlerts = [
-      {
-        id: 1,
-        type: 'heavy_rain',
-        severity: 'moderate',
-        location: 'Kenyan Highlands',
-        description: 'Short rains intensifying in Central Highlands. Localized flooding possible in low-lying areas.',
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
-      },
-      {
-        id: 2,
-        type: 'drought',
-        severity: 'high',
-        location: 'Southern Tanzania',
-        description: 'Developing drought conditions; hydropower generation affected by low inflows.',
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
-      }
-    ];
-    
-    res.status(200).json({
-      success: true,
-      data: mockAlerts
-    });
+    const WeatherAlert = require('../models/WeatherAlert');
+    const now = new Date();
+    const active = await WeatherAlert.find({ endTime: { $gte: now } }).sort({ startTime: -1 }).lean();
+    res.status(200).json({ success: true, data: active });
   } catch (error) {
     console.error('Error getting weather alerts:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -235,32 +211,25 @@ exports.getCityWeather = async (req, res) => {
 // @access  Public
 exports.getSeaLevelData = async (req, res) => {
   try {
-    const months = 120; // 10 years monthly
-    const now = new Date();
-    const series = Array.from({ length: months }).map((_, i) => {
-      const date = new Date(now);
-      date.setMonth(now.getMonth() - (months - 1 - i));
-      const level = 1130 + i * 0.02 + Math.sin(i / 6) * 0.1; // meters (Lake Victoria illustrative)
-      return { date: date.toISOString().slice(0, 10), level: Number(level.toFixed(2)) };
-    });
-    const seaLevelData = {
-      lake: 'Lake Victoria',
-      currentLevel: series[series.length - 1].level,
-      series,
-      source: 'Mock Regional Hydro Service',
-      lastUpdated: new Date().toISOString(),
-    };
-    
-    res.status(200).json({
-      success: true,
-      data: seaLevelData
-    });
+    const SeaLevel = require('../models/SeaLevel');
+    const rows = await SeaLevel.find({ lake: 'Lake Victoria' }).sort({ date: 1 }).lean();
+    if (rows.length === 0) {
+      const months = 120;
+      const now = new Date();
+      const series = Array.from({ length: months }).map((_, i) => {
+        const date = new Date(now);
+        date.setMonth(now.getMonth() - (months - 1 - i));
+        const level = 1130 + i * 0.02 + Math.sin(i / 6) * 0.1;
+        return { date: date.toISOString().slice(0, 10), level: Number(level.toFixed(2)) };
+      });
+      return res.status(200).json({ success: true, data: { lake: 'Lake Victoria', currentLevel: series[series.length - 1].level, series, source: 'Mock Regional Hydro Service', lastUpdated: new Date().toISOString() } });
+    }
+    const series = rows.map((r) => ({ date: new Date(r.date).toISOString().slice(0, 10), level: r.level }));
+    const seaLevelData = { lake: 'Lake Victoria', currentLevel: series[series.length - 1]?.level, series, source: 'Hydro Service', lastUpdated: new Date().toISOString() };
+    res.status(200).json({ success: true, data: seaLevelData });
   } catch (error) {
     console.error('Error getting sea level data:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

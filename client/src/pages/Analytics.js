@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -23,6 +23,7 @@ import {
   Legend,
 } from 'chart.js';
 import { climateAPI, aiAPI } from '../utils/api';
+import { AuthContext } from '../context/AuthContext';
 
 ChartJS.register(
   CategoryScale,
@@ -34,8 +35,9 @@ ChartJS.register(
 );
 
 const Analytics = () => {
+  const { user } = useContext(AuthContext);
   const [timeRange, setTimeRange] = useState('5years');
-  const [metric1, setMetric1] = useState('temperature');
+  const [metric1, setMetric1] = useState(user?.preferences?.defaultMetric || 'temperature');
   const [metric2, setMetric2] = useState('co2');
   const [series, setSeries] = useState([]);
   const [lakeSeries, setLakeSeries] = useState([]);

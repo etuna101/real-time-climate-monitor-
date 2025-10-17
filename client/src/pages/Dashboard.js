@@ -15,7 +15,8 @@ import {
 import MetricCard from '../components/Cards/MetricCard';
 import AlertCard from '../components/Cards/AlertCard';
 import AIInsightCard from '../components/Cards/AIInsightCard';
-import EastAfricaMap from '../components/Map/EastAfricaMap';
+import ReactLazy, { lazy } from 'react';
+const EastAfricaMap = lazy(() => import('../components/Map/EastAfricaMap'));
 import { useNavigate } from 'react-router-dom';
 import { climateAPI, aiAPI } from '../utils/api';
 
@@ -117,6 +118,7 @@ const Dashboard = () => {
           >
             East Africa Map
           </Typography>
+          <React.Suspense fallback={<Box sx={{ height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading map…</Box>}>
           <EastAfricaMap
             onCountrySelect={(id, route) => navigate(route)}
             tooltips={{
@@ -125,6 +127,7 @@ const Dashboard = () => {
               uganda: 'Uganda — Kampala AQI: 45 | Rainfall: ~ | Temp: 25°C',
             }}
           />
+          </React.Suspense>
         </Grid>
 
         {/* Regional Key Metrics */}
