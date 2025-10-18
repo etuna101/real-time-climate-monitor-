@@ -8,7 +8,7 @@ exports.requireAuth = (req, res, next) => {
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
   if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, morganqwerty);
     req.userId = decoded.sub;
     next();
   } catch (err) {

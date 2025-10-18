@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
   Box,
   Typography,
@@ -15,10 +15,10 @@ import {
 import MetricCard from '../components/Cards/MetricCard';
 import AlertCard from '../components/Cards/AlertCard';
 import AIInsightCard from '../components/Cards/AIInsightCard';
-import ReactLazy, { lazy } from 'react';
-const EastAfricaMap = lazy(() => import('../components/Map/EastAfricaMap'));
+import { lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { climateAPI, aiAPI } from '../utils/api';
+const EastAfricaMap = lazy(() => import('../components/Map/EastAfricaMap'));
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -86,7 +86,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3, md: 0 }, py: { xs: 2, sm: 3 } }}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
       {/* Page Header */}
       <Box sx={{ mb: { xs: 3, md: 4 } }}>
         <Typography 
@@ -118,7 +118,7 @@ const Dashboard = () => {
           >
             East Africa Map
           </Typography>
-          <React.Suspense fallback={<Box sx={{ height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading map…</Box>}>
+          <Suspense fallback={<Box sx={{ height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading map…</Box>}>
           <EastAfricaMap
             onCountrySelect={(id, route) => navigate(route)}
             tooltips={{
@@ -127,7 +127,7 @@ const Dashboard = () => {
               uganda: 'Uganda — Kampala AQI: 45 | Rainfall: ~ | Temp: 25°C',
             }}
           />
-          </React.Suspense>
+          </Suspense>
         </Grid>
 
         {/* Regional Key Metrics */}
