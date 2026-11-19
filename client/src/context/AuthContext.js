@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     if (!token) return;
     try {
       const resp = await api.get('/auth/me');
-      const u = resp.data || resp;
+      const u = resp.data?.email ? resp.data : resp.data?.data || resp.data || resp;
       setUser(u);
       localStorage.setItem('user', JSON.stringify(u));
     } catch {}

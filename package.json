@@ -5,11 +5,11 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "server": "nodemon server/server.js",
-    "client": "cd client && npm start",
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-client": "cd client && npm install",
-    "install-server": "cd server && npm install",
+    "install-client": "npm --prefix client install",
+    "install-server": "npm --prefix server install",
     "install-all": "npm install && npm run install-client && npm run install-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

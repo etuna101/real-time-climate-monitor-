@@ -17,4 +17,6 @@ router.get('/correlation', aiController.getCorrelation);
 // Get predictions
 router.get('/predictions/:metric', aiController.getPredictions);
 
+router.get('/local-forecast', aiController.getLocalForecast);
+
 module.exports = router;

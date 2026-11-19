@@ -8,6 +8,9 @@ router.get('/global', climateController.getGlobalData);
 // Get historical data
 router.get('/historical', climateController.getHistoricalData);
 
+router.get('/overview', climateController.getRegionalOverview);
+router.get('/snapshot/:city', climateController.getCitySnapshot);
+
 // Get location-specific data
 router.get('/location/:locationId', climateController.getLocationData);
 

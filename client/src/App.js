@@ -1,12 +1,11 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './components/Layout/Layout';
-import { AuthProvider } from './context/AuthContext';
-import { useContext } from 'react';
-import { AuthContext } from './context/AuthContext';
-// Route-level code splitting to reduce initial bundle size
+import { AuthProvider, AuthContext } from './context/AuthContext';
+import './App.css';
+
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Kenya = lazy(() => import('./pages/Kenya'));
@@ -19,14 +18,13 @@ const Signup = lazy(() => import('./pages/Signup'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Notifications = lazy(() => import('./pages/Notifications'));
+
 const RequireAuth = ({ children }) => {
   const { token } = useContext(AuthContext);
   if (!token) return <Navigate to="/login" replace />;
   return children;
 };
-import './App.css';
 
-// Create custom theme
 const theme = createTheme({
   palette: {
     primary: {

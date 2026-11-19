@@ -42,6 +42,9 @@ export const climateAPI = {
   getAirQuality: (location) => api.get(`/climate/air-quality/${location}`),
   getSeaLevelData: () => api.get('/climate/sea-level'),
   getGlacierData: () => api.get('/climate/glaciers'),
+  getOverview: () => api.get('/climate/overview'),
+  getCitySnapshot: (city) => api.get(`/climate/snapshot/${city}`),
+  getCityWeather: (city) => api.get(`/climate/weather/${city}`),
 };
 
 // AI API endpoints
@@ -51,8 +54,9 @@ export const aiAPI = {
   generateReport: (data) => api.post('/ai/generate-report', data),
   getCorrelation: (metric1, metric2) => 
     api.get('/ai/correlation', { params: { metric1, metric2 } }),
-  getPredictions: (metric, years) => 
+  getPredictions: (metric, years) =>
     api.get(`/ai/predictions/${metric}`, { params: { years } }),
+  getLocalForecast: (city) => api.get('/ai/local-forecast', { params: { city } }),
 };
 
 // Auth API

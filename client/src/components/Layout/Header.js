@@ -20,7 +20,8 @@ import { AuthContext } from '../../context/AuthContext';
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();
-  const { token } = useContext(AuthContext);
+  const { token, user, logout } = useContext(AuthContext);
+  const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase();
   return (
     <AppBar 
       position="sticky" 
@@ -68,18 +69,21 @@ const Header = ({ toggleSidebar }) => {
               
               <Tooltip title="Profile">
                 <IconButton sx={{ ml: 1 }} onClick={() => navigate('/profile')}>
-                  <Avatar 
-                    sx={{ 
-                      width: 32, 
-                      height: 32, 
+                  <Avatar
+                    sx={{
+                      width: 32,
+                      height: 32,
                       bgcolor: '#0f4c75',
                       fontSize: '0.875rem',
                     }}
                   >
-                    U
+                    {initial}
                   </Avatar>
                 </IconButton>
               </Tooltip>
+              <Button color="inherit" onClick={() => { logout(); navigate('/login'); }}>
+                Sign out
+              </Button>
             </>
           )}
         </Box>
