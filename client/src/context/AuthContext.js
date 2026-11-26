@@ -3,12 +3,20 @@ import api, { authAPI } from '../utils/api';
 
 export const AuthContext = createContext(null);
 
+const readStoredUser = () => {
+  const raw = localStorage.getItem('user');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
-  const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem('user');
-    return raw ? JSON.parse(raw) : null;
-  });
+  const [user, setUser] = useState(readStoredUser);
   const [loading, setLoading] = useState(false);
 
   const login = useCallback(async (email, password) => {
@@ -17,6 +25,7 @@ export const AuthProvider = ({ children }) => {
       const resp = await authAPI.login(email, password);
       const t = resp.data?.token || resp.token;
       const u = resp.data?.user || resp.user;
+      if (!t || !u) throw new Error('Invalid login response');
       setToken(t);
       setUser(u);
       localStorage.setItem('token', t);
@@ -33,6 +42,7 @@ export const AuthProvider = ({ children }) => {
       const resp = await authAPI.register(email, password, name);
       const t = resp.data?.token || resp.token;
       const u = resp.data?.user || resp.user;
+      if (!t || !u) throw new Error('Invalid sign-up response');
       setToken(t);
       setUser(u);
       localStorage.setItem('token', t);
@@ -57,7 +67,14 @@ export const AuthProvider = ({ children }) => {
       const u = resp.data?.email ? resp.data : resp.data?.data || resp.data || resp;
       setUser(u);
       localStorage.setItem('user', JSON.stringify(u));
-    } catch {}
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
   }, [token]);
 
   useEffect(() => {

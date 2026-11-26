@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    const emailNorm = email.toLowerCase();
+    const emailNorm = String(email).trim().toLowerCase();
     let user;
     if (isDbReady()) {
       user = await User.findOne({ email: emailNorm });
@@ -53,7 +53,10 @@ exports.register = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
-    const emailNorm = email.toLowerCase();
+    if (String(password).length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+    }
+    const emailNorm = String(email).trim().toLowerCase();
 
     if (isDbReady()) {
       const exists = await User.findOne({ email: emailNorm });

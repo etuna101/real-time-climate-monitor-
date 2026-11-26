@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || '/api';
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -79,6 +81,9 @@ export const userAPI = {
 };
 
 // Health check
-export const healthCheck = () => axios.get('http://localhost:5000/health');
+export const healthCheck = () => {
+  const apiRoot = API_URL.replace(/\/api\/?$/, '');
+  return axios.get(`${apiRoot || ''}/health`);
+};
 
 export default api;
